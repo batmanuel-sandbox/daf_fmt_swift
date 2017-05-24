@@ -1,0 +1,9 @@
+=============
+daf_fmt_mysql
+=============
+
+MySql formatters and interface classes to be used by the LSST Butler.
+
+``daf_fmt_swift`` is a package in the LSST Stack.
+
+Documentation: https://ldm-463.lsst.io
