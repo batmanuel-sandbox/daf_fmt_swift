@@ -409,7 +409,7 @@ class SwiftStorage(dafPersist.StorageInterface):
         return storage.instanceSearch(path) if storage else None
 
     def copyFile(self, fromLocation, toLocation):
-        """Copy a file from one location to another on the local filesystem.
+        """Copy a file from one location to another in the container.
 
         Parameters
         ----------
