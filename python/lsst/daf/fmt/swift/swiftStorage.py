@@ -39,9 +39,9 @@ class SwiftStorage(dafPersist.StorageInterface):
     """Storage Interface implementation specific for Swift
 
     Requires that the following environment variables exist:
-    SWIFT_USERNAME : string
+    OS_USERNAME : string
         The username to use when authorizing the connection.
-    SWIFT_PASSWORD : string
+    OS_PASSWORD : string
         The password to use when authorizing the connection.
 
     Downloads blobs from storage to a file, and uses PosixStorage to load that
@@ -133,7 +133,7 @@ class SwiftStorage(dafPersist.StorageInterface):
         """Get a connection to a swift container.
 
         Gets the username and password to access the container from the
-        environment variables SWIFT_USERNAME and SWIFT_PASSWORD.
+        environment variables OS_USERNAME and OS_PASSWORD.
 
         Gets the authorization url and the tenant name from the URI passed to
         __init__.
@@ -146,14 +146,14 @@ class SwiftStorage(dafPersist.StorageInterface):
             The object representing the connection. The object may or may not
             actually be connected.
         """
-        user = os.getenv('SWIFT_USERNAME')
+        user = os.getenv('OS_USERNAME')
         if user is None:
             raise RuntimeError(
-                'SwiftStorage could not find SWIFT_USERNAME in environment')
-        key = os.getenv('SWIFT_PASSWORD')
+                'SwiftStorage could not find OS_USERNAME in environment')
+        key = os.getenv('OS_PASSWORD')
         if key is None:
             raise RuntimeError(
-                'SwiftStorage could not find SWIFT_PASSWORD in environment')
+                'SwiftStorage could not find OS_PASSWORD in environment')
 
         # TODO are auth_version and self._version (from the input URI, usually
         # 'v2.0') supposed to correlate? How?
