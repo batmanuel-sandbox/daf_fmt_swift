@@ -26,7 +26,7 @@ import os
 import unittest
 import gc
 import lsst.daf.persistence as dp
-from lsst.daf.fmt.swift import SwiftStorage
+from lsst.daf.fmt.swift import HttpSwiftStorage, SwiftStorage
 import lsst.daf.persistence.test as dpTest
 from lsst.utils import getPackageDir
 import lsst.utils.tests
@@ -75,7 +75,7 @@ class TestSwiftStorage(unittest.TestCase):
 
     def tearDown(self):
         for uri in (self.uri, self.uri2):
-            storage = SwiftStorage(uri=uri, create=True)
+            storage = HttpSwiftStorage(uri=uri, create=True)
             if storage and storage.containerExists():
                 storage.deleteContainer()
             if os.path.exists(TestSwiftStorage.testDir):
@@ -100,7 +100,7 @@ class TestSwiftStorage(unittest.TestCase):
     def testGetSqliteRegistry(self):
         """Verify that an sqlite3 registry in the object store is downloaded
         to a temp file that can be used to instantiate an SqliteRegistry."""
-        storage = SwiftStorage(uri=self.uri, create=True)
+        storage = HttpSwiftStorage(uri=self.uri, create=True)
         # create a local registry sqlite3 database.
         registryFilePath = os.path.join(TestSwiftStorage.testDir,
                                         'registry.sqlite3')
@@ -145,7 +145,7 @@ class TestSwiftStorage(unittest.TestCase):
     def testSwiftStorage(self):
         """Verify that SwiftStorage implements all the StorageInterface
         functions."""
-        storage = SwiftStorage(uri=self.uri, create=True)
+        storage = HttpSwiftStorage(uri=self.uri, create=True)
         self.assertEqual(storage._containerName, self.container1Name)
         self.assertTrue(storage.containerExists())
         # Test containerExists by changing the container name so that it will

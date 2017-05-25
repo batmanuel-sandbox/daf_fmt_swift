@@ -24,6 +24,7 @@
 from future import standard_library
 standard_library.install_aliases()
 
+import abc
 import copy
 import fnmatch
 import os
@@ -56,9 +57,9 @@ class SwiftStorage(dafPersist.StorageInterface):
     ----------
     uri : string
         A URI to connect to a swift storage location. The form of the URI is
-        `swift://[URL without 'http://']/[Object API Version]/[tenant name (account)]/[container]`
+        `swift+[auth server scheme]://[URL]/[Object API Version]/[tenant name (account)]/[container]`
         For example:
-        `swift://nebula.ncsa.illinois.edu:5000/v2.0/lsst/my_container`
+        `swift+http://nebula.ncsa.illinois.edu:5000/v2.0/lsst/my_container`
     create : bool
         If True a new repository will be created at the root location if it
         does not exist. If False then a new repository will not be created.
@@ -69,6 +70,13 @@ class SwiftStorage(dafPersist.StorageInterface):
         If create is False and a repository does not exist at the root
         specified by uri then NoRepositroyAtRoot is raised.
     """
+    __metaclass__ = abc.ABCMeta
+
+    @abc.abstractproperty
+    def protocol(self):
+        """returns wich connection protocol the authentication server is using"""
+        pass
+
     def __init__(self, uri, create):
         # late import allows systems wihtout swiftclient to import this but not
         # fail as long as they don't try to use it.
@@ -82,7 +90,7 @@ class SwiftStorage(dafPersist.StorageInterface):
             self._version, \
             self._tenantName, \
             self._containerName = self._parseURI(uri)
-        self._url = "http://" + os.path.join(self._url, self._version)
+        self._url = self.protocol + "://" + os.path.join(self._url, self._version)
         self._connection = self._getConnection()
 
         self.fileCache = {}  # (location, file handle)
@@ -296,11 +304,11 @@ class SwiftStorage(dafPersist.StorageInterface):
         RuntimeError
             If there is an error downloading the object.
         """
-        self._log.debug("SwiftStorage getting file {}".format(location))
+        self._log.trace("SwiftStorage getting file {}".format(location))
         start = time.time()
         try:
             f = self._getLocalFile(location)
-            self._log.debug(
+            self._log.trace(
                 "...getting file took {:.02f} seconds.".format(time.time() - start))
             return f
         except self.swift.ClientException:
@@ -552,4 +560,19 @@ class SwiftStorage(dafPersist.StorageInterface):
         return cfg.mapper
 
 
-dafPersist.Storage.registerStorageClass(scheme='swift', cls=SwiftStorage)
+class HttpsSwiftStorage(SwiftStorage):
+    """Swift storage interface that uses https protocol"""
+    @property
+    def protocol(self):
+        return 'https'
+
+
+class HttpSwiftStorage(SwiftStorage):
+    """Swift storage interface that uses http protocol"""
+    @property
+    def protocol(self):
+        return 'http'
+
+
+dafPersist.Storage.registerStorageClass(scheme='swift+https', cls=HttpsSwiftStorage)
+dafPersist.Storage.registerStorageClass(scheme='swift+http', cls=HttpSwiftStorage)
